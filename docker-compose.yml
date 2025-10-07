@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  mongo:
+    image: mongo:6
+    container_name: codearena_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build: .
+    container_name: codearena_api
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongo:27017/codearena
+      - MONGO_DB_NAME=codearena
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+
+  client:
+    build:
+      context: ./client
+    container_name: codearena_client
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:
